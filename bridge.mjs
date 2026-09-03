@@ -1,4 +1,10 @@
 import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const clients = new Set();
 const actionHistory = [];
@@ -183,8 +189,8 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // First-Class MCP GET & SSE Handlers (handles http://localhost:3001/mcp, /sse, /)
-  if (req.method === 'GET' && (req.url === '/mcp' || req.url?.startsWith('/mcp?') || req.url === '/sse' || req.url?.startsWith('/sse?') || req.url === '/')) {
+  // First-Class MCP GET & SSE Handlers (handles http://localhost:3001/mcp, /sse)
+  if (req.method === 'GET' && (req.url === '/mcp' || req.url?.startsWith('/mcp?') || req.url?.startsWith('/mcp/') || req.url === '/sse' || req.url?.startsWith('/sse?') || (req.url === '/' && req.headers.accept?.includes('application/json')))) {
     const isSSE = req.headers.accept?.includes('text/event-stream') || req.url.includes('transport=sse');
     if (isSSE) {
       res.writeHead(200, {
@@ -226,6 +232,32 @@ const server = http.createServer((req, res) => {
       ]
     }, null, 2));
     return;
+  }
+
+  // Static File Serving for dist/ (Allows single-port deployment of Web Studio & WebMCP Bridge)
+  if (req.method === 'GET' && !req.url?.startsWith('/api/') && req.url !== '/state' && req.url !== '/poll') {
+    const rawPath = req.url.split('?')[0];
+    let filePath = path.join(__dirname, 'dist', rawPath === '/' ? 'index.html' : rawPath);
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      filePath = path.join(__dirname, 'dist', 'index.html');
+    }
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath);
+      const mimeTypes = {
+        '.html': 'text/html; charset=utf-8',
+        '.js': 'application/javascript',
+        '.css': 'text/css',
+        '.json': 'application/json',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.woff2': 'font/woff2',
+      };
+      res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+      fs.createReadStream(filePath).pipe(res);
+      return;
+    }
   }
 
   // Universal MCP JSON-RPC 2.0 & REST POST Endpoint
