@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
   const groqApiKey = env.VITE_GROQ_API_KEY || '';
 
   return {
+    base: './',
     plugins: [react()],
     define: {
       __NVIDIA_API_KEY__: JSON.stringify(apiKey),
