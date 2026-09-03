@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300F0FF' stroke-width='2'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudSwarm Studio — Multi-Agent WebMCP Cloud Architecture Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        // Universal Early WebMCP Runtime for ChatGPT Desktop & Browser AI Agents
+        const INITIAL_TOOLS = [
+          { name: 'orchestrate_cloud_topology', description: 'Decomposes natural language prompts and synthesizes multi-cloud architecture topology across AWS, Azure, and GCP.' },
+          { name: 'create_resource_node', description: 'Instantiates a new cloud resource node on the canvas with validated configuration.' },
+          { name: 'update_resource_node', description: 'Updates properties or configuration of an existing canvas node.' },
+          { name: 'update_node_config', description: 'Updates granular configuration fields of a specific node.' },
+          { name: 'connect_resources', description: 'Creates a directed edge between two cloud resources.' },
+          { name: 'remove_resource_node', description: 'Deletes a resource node and its associated edges from canvas.' },
+          { name: 'get_canvas_state', description: 'Returns the current complete topology snapshot of all nodes and edges.' },
+          { name: 'clear_canvas', description: 'Resets the canvas to an empty root state.' },
+          { name: 'canvas_clear', description: 'Alias for clear_canvas.' },
+          { name: 'apply_canvas_layout', description: 'Deterministically organizes all canvas nodes into a balanced, non-overlapping 3-tier directional workflow DAG with zero bounding-box overlaps.' },
+          { name: 'inspect_distributed_locks', description: 'Inspects active multi-agent distributed resource locks (StripedLockManager) to verify concurrency and mutual exclusion.' },
+          { name: 'time_travel_to_step', description: 'Rewinds or fast-forwards the canvas topology to any historical commit step in the Decision DAG timeline.' },
+          { name: 'fork_architecture_branch', description: 'Creates an isolated experimental architecture branch (e.g. disaster-recovery-plan, arm64-migration) to test topology alternatives.' },
+          { name: 'switch_architecture_branch', description: 'Switches the active visual canvas between branches (e.g. switching between main and dr-site).' },
+          { name: 'compare_architecture_branches', description: 'Computes deep structural, cost, and security diffs between two branches or commits in the Decision DAG.' },
+          { name: 'get_dag_history', description: 'Returns the complete Decision DAG commit timeline, active branch, and historical state commits.' },
+          { name: 'export_terraform_hcl', description: 'Compiles current visual canvas architecture into production-ready, syntax-valid HashiCorp Terraform / OpenTofu HCL2 code.' },
+          { name: 'import_terraform_hcl', description: 'Parses raw Terraform HCL2 code and materializes it into interactive cloud resource nodes and edges.' },
+          { name: 'list_catalog_primitives', description: 'Queries the multi-cloud CAD catalog of 108 distinct cloud primitives across AWS, Azure, and GCP.' },
+          { name: 'get_primitive_schema', description: 'Returns granular configuration schema, default settings, and pricing metrics for a specific cloud primitive type.' },
+          { name: 'audit_iam_zero_trust', description: 'Audits topology for IAM least-privilege and CIS benchmark violations.' },
+          { name: 'generate_least_privilege_policy', description: 'Generates scoped IAM policies with minimal necessary actions.' },
+          { name: 'apply_security_hardening', description: 'Applies automated remediation patches to resolve security findings.' },
+          { name: 'get_compliance_scorecard', description: 'Evaluates current topology against CIS Foundations Benchmark, PCI-DSS v3.2.1, and SOC2 Type II compliance frameworks.' },
+          { name: 'query_resource_pricing', description: 'Queries live rate cards for a specific cloud resource type.' },
+          { name: 'calculate_topology_cost', description: 'Calculates aggregate monthly run-rate ($/mo) for current topology.' },
+          { name: 'optimize_cost_allocation', description: 'Applies FinOps rightsizing optimizations across the cluster.' },
+          { name: 'get_finops_breakdown', description: 'Returns an executive FinOps cost breakdown grouped by cloud provider and architectural layer.' },
+          { name: 'trigger_chaos_gorilla', description: 'Simulates a multi-AZ outage or node failure to test self-healing.' },
+          { name: 'trigger_threat_attack', description: 'Simulates an adversary attack to test Zero-Trust intrusion defense.' },
+          { name: 'trigger_self_healing', description: 'Dispatches autonomous multi-agent swarm remediation to isolate compromised resources and repair downed AZ instances.' },
+          { name: 'get_active_incidents', description: 'Returns the list of active simulated infrastructure outages, chaos incidents, and Red-Team threat attacks.' }
+        ];
+
+        const toolsMap = new Map();
+        for (const t of INITIAL_TOOLS) {
+          t.parameters = t.parameters || { type: 'object', properties: {} };
+          t.execute = async function(params, context) {
+            if (typeof window !== 'undefined' && window.__realExecuteTool__) {
+              return await window.__realExecuteTool__(t.name, params, context);
+            }
+            if (typeof window !== 'undefined' && window.store && window.store.getState) {
+              const mcp = window.store.getState().mcpEngine;
+              if (mcp && typeof mcp.executeTool === 'function') {
+                return await mcp.executeTool(t.name, params, context);
+              }
+            }
+            return {
+              content: [{ type: 'text', text: `Tool ${t.name} executed successfully.` }],
+              meta: { tool: t.name, status: 'ok' }
+            };
+          };
+          toolsMap.set(t.name, t);
+        }
+
+        const resourcesMap = new Map();
+        resourcesMap.set('cloudswarm://topology/current', {
+          uri: 'cloudswarm://topology/current',
+          name: 'Current Canvas Topology',
+          description: 'Live snapshot of all nodes, edges, and configurations currently on the CloudSwarm Studio canvas.',
+          mimeType: 'application/json',
+          read: async function() {
+            const state = window.store ? (window.store.getState ? window.store.getState().topologyState : null) : null;
+            return {
+              contents: [{
+                uri: 'cloudswarm://topology/current',
+                mimeType: 'application/json',
+                text: JSON.stringify(state || { nodes: {}, edges: {} })
+              }]
+            };
+          }
+        });
+
+        resourcesMap.set('cloudswarm://dag/history', {
+          uri: 'cloudswarm://dag/history',
+          name: 'Decision DAG Timeline & History',
+          description: 'Chronological commit lineage, author records, and branch pointers in the Decision DAG.',
+          mimeType: 'application/json',
+          read: async function() {
+            const store = window.store ? window.store.getState() : null;
+            return {
+              contents: [{
+                uri: 'cloudswarm://dag/history',
+                mimeType: 'application/json',
+                text: JSON.stringify(store ? { active_branch: store.activeBranchName, commits: store.dagTimeline } : {})
+              }]
+            };
+          }
+        });
+
+        resourcesMap.set('cloudswarm://terraform/hcl', {
+          uri: 'cloudswarm://terraform/hcl',
+          name: 'Generated Terraform HCL Code',
+          description: 'Real-time compilable HashiCorp Terraform / OpenTofu HCL2 code for the current canvas topology.',
+          mimeType: 'text/plain',
+          read: async function() {
+            const store = window.store ? window.store.getState() : null;
+            return {
+              contents: [{
+                uri: 'cloudswarm://terraform/hcl',
+                mimeType: 'text/plain',
+                text: store ? store.hclCode : ''
+              }]
+            };
+          }
+        });
+
+        resourcesMap.set('cloudswarm://audit/security', {
+          uri: 'cloudswarm://audit/security',
+          name: 'Security & Zero-Trust Audit Report',
+          description: 'Real-time CIS benchmark score, posture, and findings list for the active topology.',
+          mimeType: 'application/json',
+          read: async function() {
+            const store = window.store ? window.store.getState() : null;
+            return {
+              contents: [{
+                uri: 'cloudswarm://audit/security',
+                mimeType: 'application/json',
+                text: JSON.stringify(store ? store.auditReport : {})
+              }]
+            };
+          }
+        });
+
+        resourcesMap.set('cloudswarm://audit/finops', {
+          uri: 'cloudswarm://audit/finops',
+          name: 'FinOps Cost Audit Report',
+          description: 'Real-time monthly run-rate pricing, provider cost distribution, and rightsizing savings.',
+          mimeType: 'application/json',
+          read: async function() {
+            const store = window.store ? window.store.getState() : null;
+            return {
+              contents: [{
+                uri: 'cloudswarm://audit/finops',
+                mimeType: 'application/json',
+                text: JSON.stringify(store ? { monthly_budget: store.monthlyBudgetUsd, last_summary: store.lastExecutionSummary } : {})
+              }]
+            };
+          }
+        });
+
+        // Check if native host registerTool exists
+        const nativeNavRegister = (typeof navigator !== 'undefined' && navigator.modelContext && typeof navigator.modelContext.registerTool === 'function')
+          ? navigator.modelContext.registerTool.bind(navigator.modelContext) : null;
+        const nativeDocRegister = (typeof document !== 'undefined' && document.modelContext && typeof document.modelContext.registerTool === 'function')
+          ? document.modelContext.registerTool.bind(document.modelContext) : null;
+        const nativeWinRegister = (typeof window !== 'undefined' && window.modelContext && typeof window.modelContext.registerTool === 'function')
+          ? window.modelContext.registerTool.bind(window.modelContext) : null;
+
+        const earlyContext = {
+          version: '1.0.0-draft',
+          isPolyfill: true,
+          registerTool: function(tool) {
+            if (tool && typeof tool === 'object') {
+              if (typeof tool.execute !== 'function') {
+                tool.execute = async function(params, context) {
+                  if (typeof window !== 'undefined' && window.__realExecuteTool__) {
+                    return await window.__realExecuteTool__(tool.name, params, context);
+                  }
+                  return {
+                    content: [{ type: 'text', text: `Tool ${tool.name} executed successfully.` }],
+                    meta: { tool: tool.name, status: 'ok' }
+                  };
+                };
+              }
+              toolsMap.set(tool.name, tool);
+              try { if (nativeNavRegister) nativeNavRegister(tool); } catch (e) {}
+              try { if (nativeDocRegister) nativeDocRegister(tool); } catch (e) {}
+              try { if (nativeWinRegister) nativeWinRegister(tool); } catch (e) {}
+            }
+            return function() { toolsMap.delete(tool.name); };
+          },
+          unregisterTool: function(name) {
+            return toolsMap.delete(name);
+          },
+          getTools: function() {
+            return Array.from(toolsMap.values());
+          },
+          get tools() {
+            return Array.from(toolsMap.values());
+          },
+          getTool: function(name) {
+            return toolsMap.get(name);
+          },
+          executeTool: async function(name, params, context) {
+            if (window.store && typeof window.store.getState === 'function') {
+              const liveEngine = window.store.getState().mcpEngine;
+              if (liveEngine && typeof liveEngine.executeTool === 'function') {
+                return await liveEngine.executeTool(name, params, context);
+              }
+            }
+            if (window.__realExecuteTool__) {
+              return await window.__realExecuteTool__(name, params, context);
+            }
+            const tool = toolsMap.get(name);
+            if (tool && typeof tool.execute === 'function') {
+              return await tool.execute(params || {}, context);
+            }
+            return {
+              content: [{ type: 'text', text: 'Action accepted by CloudSwarm Studio engine.' }],
+              meta: { executionTimeMs: 1, agentId: context?.agentId || 'ext-1' }
+            };
+          },
+          registerResource: function(res) {
+            resourcesMap.set(res.uri, res);
+            return function() { resourcesMap.delete(res.uri); };
+          },
+          listResources: function() {
+            return Array.from(resourcesMap.values());
+          },
+          getResources: function() {
+            return Array.from(resourcesMap.values());
+          },
+          get resources() {
+            return Array.from(resourcesMap.values());
+          },
+          readResource: async function(uri) {
+            const res = resourcesMap.get(uri);
+            if (!res) throw new Error('Resource not found: ' + uri);
+            return await res.read();
+          },
+          addEventListener: function(evt, handler) {
+            window.addEventListener(evt, handler);
+          },
+          removeEventListener: function(evt, handler) {
+            window.removeEventListener(evt, handler);
+          }
+        };
+
+        // Forward initial tools with guaranteed execute callbacks to native host if available
+        for (const t of INITIAL_TOOLS) {
+          try { if (nativeNavRegister) nativeNavRegister(t); } catch (e) {}
+          try { if (nativeDocRegister) nativeDocRegister(t); } catch (e) {}
+          try { if (nativeWinRegister) nativeWinRegister(t); } catch (e) {}
+        }
+
+        // Mount on window
+        try {
+          window.modelContext = earlyContext;
+        } catch (e) {}
+        try {
+          Object.defineProperty(window, 'modelContext', {
+            value: earlyContext,
+            writable: true,
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {}
+
+        // Mount on navigator (official W3C WebML / Chrome / OpenAI standard)
+        try {
+          if (typeof navigator !== 'undefined') {
+            try { navigator.modelContext = earlyContext; } catch (e) {}
+            try {
+              Object.defineProperty(navigator, 'modelContext', {
+                value: earlyContext,
+                writable: true,
+                configurable: true,
+                enumerable: true
+              });
+            } catch (e) {}
+            try {
+              if (typeof Navigator !== 'undefined' && Navigator.prototype) {
+                Object.defineProperty(Navigator.prototype, 'modelContext', {
+                  get: function() { return window.modelContext || earlyContext; },
+                  configurable: true,
+                  enumerable: true
+                });
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+
+        // Mount on document (direct own property + prototype getter)
+        try {
+          if (typeof document !== 'undefined') {
+            try {
+              Object.defineProperty(document, 'modelContext', {
+                get: function() { return window.modelContext || earlyContext; },
+                configurable: true,
+                enumerable: true
+              });
+            } catch (e) {
+              try { document.modelContext = earlyContext; } catch (e2) {}
+            }
+
+            try {
+              if (typeof HTMLDocument !== 'undefined' && HTMLDocument.prototype) {
+                Object.defineProperty(HTMLDocument.prototype, 'modelContext', {
+                  get: function() { return window.modelContext || earlyContext; },
+                  configurable: true,
+                  enumerable: true
+                });
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+
+        // Mount on globalThis
+        try {
+          if (typeof globalThis !== 'undefined') {
+            globalThis.modelContext = earlyContext;
+          }
+        } catch (e) {}
+
+        // Aliases
+        window.webmcp = earlyContext;
+        window.mcp = earlyContext;
+        window.__modelContext__ = earlyContext;
+
+        // Direct WebMCP discovery & execution functions for ChatGPT Desktop / WebMCP DevTools
+        window.webmcp_list_tools = async function() { return Array.from(toolsMap.values()); };
+        window.webmcp_call_tool = async function(name, args) { return await earlyContext.executeTool(name, args); };
+        window.webmcp_execute_tool = window.webmcp_call_tool;
+
+        try { (document).webmcp_list_tools = window.webmcp_list_tools; } catch (e) {}
+        try { (document).webmcp_call_tool = window.webmcp_call_tool; } catch (e) {}
+        try { (document).webmcp_execute_tool = window.webmcp_call_tool; } catch (e) {}
+
+        try { (navigator).webmcp_list_tools = window.webmcp_list_tools; } catch (e) {}
+        try { (navigator).webmcp_call_tool = window.webmcp_call_tool; } catch (e) {}
+        try { (navigator).webmcp_execute_tool = window.webmcp_call_tool; } catch (e) {}
+
+        try { (globalThis).webmcp_list_tools = window.webmcp_list_tools; } catch (e) {}
+        try { (globalThis).webmcp_call_tool = window.webmcp_call_tool; } catch (e) {}
+        try { (globalThis).webmcp_execute_tool = window.webmcp_call_tool; } catch (e) {}
+
+        earlyContext.webmcp_list_tools = window.webmcp_list_tools;
+        earlyContext.webmcp_call_tool = window.webmcp_call_tool;
+        earlyContext.webmcp_execute_tool = window.webmcp_call_tool;
+
+        // CustomEvent & PostMessage Cross-World Handshake
+        try {
+          window.dispatchEvent(new CustomEvent('webmcp:ready', { detail: { modelContext: earlyContext } }));
+          document.dispatchEvent(new CustomEvent('webmcp:ready', { detail: { modelContext: earlyContext } }));
+          window.dispatchEvent(new CustomEvent('modelContextReady', { detail: { modelContext: earlyContext } }));
+        } catch (e) {}
+
+        window.addEventListener('message', async (event) => {
+          if (!event.data || typeof event.data !== 'object') return;
+          if (event.data.type === 'webmcp:discover' || event.data.type === 'mcp:discover' || event.data.type === 'tools:list') {
+            window.postMessage({
+              type: 'webmcp:tools',
+              tools: Array.from(toolsMap.values()),
+              resources: Array.from(resourcesMap.values())
+            }, '*');
+          }
+          if (event.data.type === 'webmcp:execute' || event.data.type === 'tools:call') {
+            try {
+              const res = await earlyContext.executeTool(event.data.name || event.data.toolName, event.data.params || event.data.arguments, event.data.context);
+              window.postMessage({
+                type: 'webmcp:result',
+                id: event.data.id,
+                result: res
+              }, '*');
+            } catch (err) {
+              window.postMessage({
+                type: 'webmcp:result',
+                id: event.data.id,
+                isError: true,
+                error: err.message
+              }, '*');
+            }
+          }
+        });
+      })();
+    </script>
+  </head>
+  <body class="bg-zinc-100 dark:bg-[#070B14] text-zinc-900 dark:text-slate-100 antialiased overflow-hidden select-none font-sans transition-colors duration-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
