@@ -4,11 +4,19 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/state",
+      "destination": "/api/state"
+    },
+    {
       "source": "/api/nim/(.*)",
       "destination": "https://integrate.api.nvidia.com/v1/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/|mcp|state).*)",
       "destination": "/index.html"
     }
   ]
